@@ -1,0 +1,929 @@
+/* ==========================================================================
+   Akari Museum - 夜の美術館パズル Stylesheet
+   Theme: Night Museum (Dark theme with Amber glow & Antique Gold art frames)
+   ========================================================================== */
+
+/* --- CSS Variables & Custom Properties --- */
+:root {
+  /* Core Colors */
+  --color-bg-base: hsl(240, 10%, 7%);       /* Obsidian Black */
+  --color-bg-panel: hsl(240, 16%, 12%);     /* Gallery Slate */
+  --color-bg-panel-glass: hsla(240, 16%, 12%, 0.75);
+  --color-cell-empty: hsl(240, 12%, 15%);
+  --color-cell-wall: hsl(240, 8%, 5%);
+  
+  /* Accent & Highlight Colors */
+  --color-amber-glow: hsl(43, 100%, 62%);    /* Museum Amber */
+  --color-gold-metallic: hsl(35, 38%, 64%);  /* Antique Gold */
+  --color-neon-crimson: hsl(348, 100%, 61%); /* Neon Crimson */
+  --color-dot-marker: hsl(210, 13%, 45%);    /* Cobalt Dust */
+  --color-text-main: hsl(210, 20%, 90%);
+  --color-text-muted: hsl(210, 10%, 60%);
+
+  /* Neon Effects & Shadows */
+  --shadow-neon-amber: 
+    0 0 10px hsla(43, 100%, 62%, 0.5), 
+    0 0 20px hsla(43, 100%, 62%, 0.25),
+    inset 0 0 8px hsla(43, 100%, 62%, 0.2);
+  --shadow-neon-red: 
+    0 0 12px hsla(348, 100%, 61%, 0.6), 
+    0 0 24px hsla(348, 100%, 61%, 0.3);
+  --shadow-card: 0 20px 40px rgba(0, 0, 0, 0.6);
+  --border-gold-frame: 1px solid var(--color-gold-metallic);
+  --border-gold-double: 4px double var(--color-gold-metallic);
+
+  /* Transitions */
+  --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- Reset & Base Styles --- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', 'Noto Sans JP', sans-serif;
+  background-color: var(--color-bg-base);
+  color: var(--color-text-main);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Base Headings & Typography */
+h1, h2, h3, .tracker-value, .btn-level {
+  font-family: 'Cinzel', 'Playfair Display', serif;
+}
+
+/* Fullscreen Confetti Canvas */
+#confetti-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 999;
+}
+
+/* Ambient glow in background */
+.ambient-glow {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, hsla(43, 100%, 62%, 0.05) 0%, rgba(0,0,0,0) 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* --- Layout Container --- */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 520px;
+  min-height: 100vh;
+  padding: 1.5rem 1rem;
+  z-index: 1;
+  position: relative;
+  justify-content: space-between;
+}
+
+/* --- Header Section --- */
+.museum-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(197, 168, 128, 0.2);
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.header-logo h1 {
+  font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  line-height: 1.1;
+  color: var(--color-text-main);
+}
+
+.accent-gold {
+  color: var(--color-gold-metallic);
+  text-shadow: 0 0 10px hsla(35, 38%, 64%, 0.3);
+}
+
+.header-logo .subtitle {
+  font-size: 0.75rem;
+  letter-spacing: 0.3em;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  margin-top: 0.2rem;
+}
+
+/* Button Icon Styling (Rule Trigger) */
+.btn-icon {
+  background: transparent;
+  border: 1px solid rgba(197, 168, 128, 0.4);
+  border-radius: 4px;
+  color: var(--color-gold-metallic);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.85rem;
+  transition: var(--transition-fast);
+}
+
+.btn-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.btn-icon:hover {
+  background-color: rgba(197, 168, 128, 0.1);
+  border-color: var(--color-gold-metallic);
+  box-shadow: 0 0 8px hsla(35, 38%, 64%, 0.2);
+}
+
+/* --- Main content --- */
+.museum-main {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1.25rem;
+}
+
+/* --- Control Panel (Levels & Stats) --- */
+.control-panel {
+  background-color: var(--color-bg-panel-glass);
+  border: 1px solid rgba(197, 168, 128, 0.15);
+  border-radius: 6px;
+  padding: 0.75rem;
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(10px);
+}
+
+/* Level Selector Buttons */
+.level-selector {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.btn-level {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(197, 168, 128, 0.2);
+  border-radius: 4px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 0.5rem 0.25rem;
+  text-align: center;
+  transition: var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.btn-level span {
+  font-size: 0.65rem;
+  opacity: 0.6;
+}
+
+.btn-level:hover {
+  color: var(--color-text-main);
+  background-color: rgba(197, 168, 128, 0.05);
+  border-color: rgba(197, 168, 128, 0.4);
+}
+
+.btn-level.active {
+  color: var(--color-gold-metallic);
+  background-color: rgba(197, 168, 128, 0.12);
+  border-color: var(--color-gold-metallic);
+  box-shadow: inset 0 0 6px rgba(197, 168, 128, 0.2), 0 0 8px hsla(35, 38%, 64%, 0.15);
+  font-weight: 700;
+}
+
+/* Status Tracker counters */
+.status-tracker {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  border-top: 1px dashed rgba(197, 168, 128, 0.15);
+  padding-top: 0.75rem;
+}
+
+.tracker-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.tracker-label {
+  font-size: 0.65rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.15rem;
+}
+
+.tracker-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--color-text-main);
+}
+
+.timer-box .tracker-value {
+  color: var(--color-gold-metallic);
+  font-variant-numeric: tabular-nums;
+}
+
+.lights-box .tracker-value {
+  color: var(--color-amber-glow);
+}
+
+/* --- Puzzle Board Grid --- */
+.board-viewport {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.museum-board {
+  display: grid;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 1 / 1;
+  background-color: var(--color-cell-wall);
+  border: var(--border-gold-double);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7), 0 0 15px rgba(197, 168, 128, 0.05);
+  border-radius: 6px;
+  overflow: hidden;
+  padding: 4px;
+  gap: 3px;
+  user-select: none;
+  transition: border-color 0.5s ease, box-shadow 0.5s ease;
+}
+
+/* Individual Cell Styles */
+.board-cell {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-cell-empty);
+  transition: background-color 0.25s ease, box-shadow 0.25s ease;
+  border-radius: 2px;
+}
+
+/* Empty Cell & Hover */
+.board-cell.cell-empty {
+  cursor: pointer;
+}
+
+.board-cell.cell-empty::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border: 1px solid rgba(255, 255, 255, 0.015);
+  pointer-events: none;
+}
+
+.board-cell.cell-empty:hover {
+  background-color: hsl(240, 12%, 19%);
+}
+
+/* Black Cells / Walls */
+.board-cell.cell-wall {
+  background: radial-gradient(circle at center, #20202d 0%, var(--color-cell-wall) 100%);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.85);
+  cursor: not-allowed;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  font-weight: 700;
+}
+
+.board-cell.cell-wall.wall-numbered {
+  color: var(--color-text-muted);
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+/* Satisfied Wall Numbers */
+.board-cell.cell-wall.wall-satisfied {
+  color: var(--color-gold-metallic);
+  text-shadow: 0 0 6px hsla(35, 38%, 64%, 0.7);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.85), 0 0 8px hsla(35, 38%, 64%, 0.15);
+  border-color: rgba(197, 168, 128, 0.3);
+}
+
+/* Labeled Wall Errors */
+.board-cell.cell-wall.wall-error {
+  color: var(--color-neon-crimson) !important;
+  text-shadow: var(--shadow-neon-red);
+  box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.9), 0 0 10px hsla(348, 100%, 61%, 0.4);
+  border: 1px solid rgba(255, 56, 96, 0.4);
+  animation: error-pulse 1.8s infinite ease-in-out;
+}
+
+/* Lit Cells */
+.board-cell.cell-illuminated {
+  background-color: hsla(43, 100%, 62%, 0.16);
+}
+
+/* Lit Cells Overlay Gradient (directional aura) */
+.board-cell.cell-illuminated::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  box-shadow: inset 0 0 8px hsla(43, 100%, 62%, 0.08);
+  pointer-events: none;
+}
+
+/* Lightbulb Cells */
+.board-cell.cell-lightbulb {
+  background-color: hsla(43, 100%, 62%, 0.22);
+}
+
+/* Lightbulb SVG Filament */
+.board-cell.cell-lightbulb::before {
+  content: '';
+  width: 65%;
+  height: 65%;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffc73b'><path d='M12 2C7.86 2 4.5 5.36 4.5 9.5c0 2.52 1.24 4.75 3.13 6.13C8.82 16.5 9.5 17.58 9.5 19h5c0-1.42.68-2.5 1.87-3.37C18.26 14.25 19.5 12.02 19.5 9.5 19.5 5.36 16.14 2 12 2zm-1 20h2v1h-2z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  filter: drop-shadow(0 0 6px var(--color-amber-glow));
+  animation: bulb-appear 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  z-index: 2;
+}
+
+/* Conflict/Error Bulb */
+.board-cell.cell-lightbulb.status-error {
+  background-color: hsla(348, 100%, 61%, 0.2);
+}
+
+.board-cell.cell-lightbulb.status-error::before {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff3860'><path d='M12 2C7.86 2 4.5 5.36 4.5 9.5c0 2.52 1.24 4.75 3.13 6.13C8.82 16.5 9.5 17.58 9.5 19h5c0-1.42.68-2.5 1.87-3.37C18.26 14.25 19.5 12.02 19.5 9.5 19.5 5.36 16.14 2 12 2zm-1 20h2v1h-2z'/></svg>");
+  filter: drop-shadow(0 0 8px var(--color-neon-crimson));
+  animation: error-shiver 0.15s infinite alternate;
+}
+
+/* Conflict light beam line */
+.board-cell.cell-illuminated.status-error {
+  background-color: hsla(348, 100%, 61%, 0.16);
+}
+.board-cell.cell-illuminated.status-error::after {
+  box-shadow: inset 0 0 8px hsla(348, 100%, 61%, 0.12);
+}
+
+/* Dot/Mark Cells */
+.board-cell.cell-marked::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-dot-marker);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.15);
+  animation: dot-appear 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  z-index: 2;
+  opacity: 0.7;
+}
+
+/* --- Dynamic Cursors depending on Mode --- */
+.museum-board.mode-lightbulb .board-cell.cell-empty {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='%23ffc73b'><path d='M12 2C7.86 2 4.5 5.36 4.5 9.5c0 2.52 1.24 4.75 3.13 6.13C8.82 16.5 9.5 17.58 9.5 19h5c0-1.42.68-2.5 1.87-3.37C18.26 14.25 19.5 12.02 19.5 9.5 19.5 5.36 16.14 2 12 2z'/></svg>") 12 12, pointer;
+}
+
+.museum-board.mode-dot .board-cell.cell-empty {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'><circle cx='8' cy='8' r='4' fill='%234f5b66'/></svg>") 8 8, pointer;
+}
+
+/* --- Board Size specific styling adjustments --- */
+#museum-board[data-size="5"] .board-cell.cell-wall.wall-numbered { font-size: 1.8rem; }
+#museum-board[data-size="7"] .board-cell.cell-wall.wall-numbered { font-size: 1.4rem; }
+#museum-board[data-size="10"] .board-cell.cell-wall.wall-numbered { font-size: 1.1rem; }
+
+/* --- Toolbar Controls (Mode Toggles & Action Buttons) --- */
+.toolbar-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Input mode toggles (Light vs Dot) */
+.mode-toggle-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 3px;
+  border-radius: 6px;
+  border: 1px solid rgba(197, 168, 128, 0.1);
+}
+
+.btn-mode {
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: var(--transition-fast);
+}
+
+.btn-mode svg {
+  width: 16px;
+  height: 16px;
+}
+
+.btn-mode:hover {
+  color: var(--color-text-main);
+}
+
+.btn-mode.active {
+  background-color: var(--color-bg-panel);
+  border: 1px solid rgba(197, 168, 128, 0.2);
+  color: var(--color-text-main);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+#btn-mode-light.active {
+  color: var(--color-amber-glow);
+  border-color: rgba(255, 199, 59, 0.25);
+  box-shadow: 0 4px 12px hsla(43, 100%, 62%, 0.08);
+}
+
+#btn-mode-dot.active {
+  color: var(--color-text-main);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Action Buttons (Reset & Give Up) */
+.action-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 0.75rem;
+}
+
+.btn-action {
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: var(--transition-fast);
+  letter-spacing: 0.05em;
+}
+
+.btn-action svg {
+  width: 18px;
+  height: 18px;
+}
+
+.btn-secondary {
+  background-color: transparent;
+  border: 1px solid rgba(197, 168, 128, 0.4);
+  color: var(--color-gold-metallic);
+}
+
+.btn-secondary:hover {
+  background-color: rgba(197, 168, 128, 0.08);
+  border-color: var(--color-gold-metallic);
+}
+
+.btn-primary {
+  background-color: var(--color-gold-metallic);
+  border: 1px solid var(--color-gold-metallic);
+  color: var(--color-bg-base);
+}
+
+.btn-primary:hover {
+  background-color: hsl(35, 38%, 70%);
+  border-color: hsl(35, 38%, 70%);
+  box-shadow: 0 0 15px hsla(35, 38%, 64%, 0.25);
+}
+
+/* --- Footer --- */
+.museum-footer {
+  border-top: 1px solid rgba(197, 168, 128, 0.1);
+  padding-top: 0.75rem;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.museum-footer p {
+  font-size: 0.65rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.05em;
+}
+
+/* --- Modals Styles --- */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(7, 7, 9, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Art Frame styling for modals */
+.art-frame {
+  border: var(--border-gold-double);
+  background-color: var(--color-bg-panel);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.85), 0 0 20px rgba(197, 168, 128, 0.1);
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+  max-width: 460px;
+  width: 100%;
+  transform: scale(0.9);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-overlay.active .art-frame {
+  transform: scale(1);
+}
+
+.modal-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.75rem;
+  max-height: 85vh;
+}
+
+/* Close Button */
+.modal-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 1.8rem;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+  line-height: 1;
+}
+
+.modal-close:hover {
+  color: var(--color-text-main);
+  transform: rotate(90deg);
+}
+
+.modal-title {
+  color: var(--color-gold-metallic);
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1.25rem;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid rgba(197, 168, 128, 0.15);
+  padding-bottom: 0.75rem;
+}
+
+/* Rules Modal Inner Body */
+.modal-body {
+  overflow-y: auto;
+  flex-grow: 1;
+  padding-right: 0.5rem;
+}
+
+.modal-body::-webkit-scrollbar {
+  width: 4px;
+}
+.modal-body::-webkit-scrollbar-thumb {
+  background-color: rgba(197, 168, 128, 0.25);
+  border-radius: 2px;
+}
+
+.rule-intro {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.rule-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.rule-item {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+}
+
+.rule-icon-box {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.rule-icon-box.amber {
+  color: var(--color-amber-glow);
+  border-color: rgba(255, 199, 59, 0.2);
+  background-color: hsla(43, 100%, 62%, 0.06);
+}
+
+.rule-icon-box.gold {
+  color: var(--color-gold-metallic);
+  border-color: rgba(197, 168, 128, 0.2);
+  background-color: hsla(35, 38%, 64%, 0.06);
+}
+
+.rule-icon-box.crimson {
+  color: var(--color-neon-crimson);
+  border-color: rgba(255, 56, 96, 0.2);
+  background-color: hsla(348, 100%, 61%, 0.06);
+}
+
+.rule-icon-box.gray {
+  color: var(--color-text-muted);
+}
+
+.rule-text h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+  margin-bottom: 0.2rem;
+}
+
+.rule-text p {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.rule-tips {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  padding: 0.75rem;
+  border: 1px dashed rgba(197, 168, 128, 0.2);
+}
+
+.rule-tips h4 {
+  font-size: 0.8rem;
+  color: var(--color-gold-metallic);
+  margin-bottom: 0.4rem;
+}
+
+.rule-tips ul {
+  list-style-type: none;
+}
+
+.rule-tips li {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  position: relative;
+  padding-left: 0.8rem;
+}
+
+.rule-tips li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--color-gold-metallic);
+}
+
+/* Modal Action Footer buttons */
+.modal-footer {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.btn-modal-action {
+  background-color: var(--color-gold-metallic);
+  border: 1px solid var(--color-gold-metallic);
+  color: var(--color-bg-base);
+  padding: 0.65rem 2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: var(--transition-fast);
+}
+
+.btn-modal-action:hover {
+  background-color: hsl(35, 38%, 70%);
+  border-color: hsl(35, 38%, 70%);
+  box-shadow: 0 0 12px hsla(35, 38%, 64%, 0.3);
+}
+
+/* Clear Celebration Modal Specifics */
+.clear-card {
+  max-width: 400px;
+  background-color: var(--color-bg-panel);
+}
+
+.clear-title {
+  font-size: 1.8rem;
+  color: var(--color-gold-metallic);
+  border: none;
+  padding: 0;
+  margin-bottom: 0.25rem;
+  text-shadow: 0 0 15px hsla(35, 38%, 64%, 0.3);
+}
+
+.clear-subtitle {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.05em;
+}
+
+.clear-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(197, 168, 128, 0.15);
+  border-radius: 4px;
+  padding: 0.75rem;
+}
+
+.stat-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+}
+
+.stat-box:not(:last-child) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.stat-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+#stat-level {
+  color: var(--color-gold-metallic);
+}
+#stat-time {
+  color: var(--color-amber-glow);
+}
+
+.gold-glow {
+  animation: modal-gold-pulse 2s infinite alternate;
+}
+
+/* --- Animations Keyframes --- */
+
+/* Pop-in animation for bulbs */
+@keyframes bulb-appear {
+  0% {
+    transform: scale(0) rotate(-15deg);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.2) rotate(5deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+
+/* Mark dot appear */
+@keyframes dot-appear {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+}
+
+/* Wall cell error pulse */
+@keyframes error-pulse {
+  0% {
+    box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.85), 0 0 6px hsla(348, 100%, 61%, 0.25);
+    border-color: rgba(255, 56, 96, 0.25);
+  }
+  50% {
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.9), 0 0 18px hsla(348, 100%, 61%, 0.6);
+    border-color: rgba(255, 56, 96, 0.6);
+  }
+  100% {
+    box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.85), 0 0 6px hsla(348, 100%, 61%, 0.25);
+    border-color: rgba(255, 56, 96, 0.25);
+  }
+}
+
+/* Error shiver for bulbs */
+@keyframes error-shiver {
+  0% { transform: translate(0.5px, 0.5px) rotate(0deg); }
+  10% { transform: translate(-0.5px, -1px) rotate(-0.5deg); }
+  20% { transform: translate(-1.5px, 0px) rotate(0.5deg); }
+  30% { transform: translate(0px, 1px) rotate(0deg); }
+  40% { transform: translate(0.5px, -0.5px) rotate(0.5deg); }
+  50% { transform: translate(-0.5px, 1px) rotate(-0.5deg); }
+  60% { transform: translate(-1.5px, 0.5px) rotate(0deg); }
+  70% { transform: translate(1px, 0.5px) rotate(-0.5deg); }
+  80% { transform: translate(-0.5px, -0.5px) rotate(0.5deg); }
+  90% { transform: translate(1px, 1px) rotate(0deg); }
+  100% { transform: translate(0.5px, -1px) rotate(-0.5deg); }
+}
+
+/* Gold glow pulse for clear modal action button */
+@keyframes modal-gold-pulse {
+  0% {
+    box-shadow: 0 0 5px hsla(43, 100%, 62%, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 15px hsla(43, 100%, 62%, 0.6);
+  }
+}
+
+/* Clear animation for the whole board */
+.museum-board.clear-animation {
+  animation: board-gold-glow 2.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes board-gold-glow {
+  0% {
+    border-color: var(--color-gold-metallic);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+  }
+  30% {
+    border-color: var(--color-amber-glow);
+    box-shadow: 0 0 25px var(--color-amber-glow), 0 15px 35px rgba(0, 0, 0, 0.85);
+  }
+  100% {
+    border-color: var(--color-gold-metallic);
+    box-shadow: 0 0 15px hsla(35, 38%, 64%, 0.3), 0 15px 35px rgba(0, 0, 0, 0.7);
+  }
+}
